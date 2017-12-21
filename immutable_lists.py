@@ -1,9 +1,7 @@
 # Cons lists, tail recursion decorator, functions on lists:
 
 from _collections_abc import ABCMeta, abstractmethod
-import collections
-import multiprocessing
-from pprint import pprint
+
 
 # Recurse Class and tail recursion decorator:
 
