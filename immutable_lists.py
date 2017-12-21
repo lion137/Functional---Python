@@ -26,7 +26,6 @@ def tail_recursive(f):
     return decorated
 
 
-
 # immutable cons list and methods:
 class Nil:
     """class Nil, the empty list"""
@@ -39,9 +38,6 @@ class Nil:
 
     def tail(self):
         return Exception("Empty")
-
-    def get_next(self):
-        return None
 
     def __str__(self):
         return "()"
@@ -57,9 +53,6 @@ class Cons:
     def is_empty(self):
         return False
 
-    def get_next(self):
-        return self.tail
-
     def print_list(self):
             current = self
             out = ''
@@ -74,7 +67,7 @@ class Cons:
             return '(' + out + ')'
 
 
-class List(metaclass=ABCMeta):
+class ListImmutable(metaclass=ABCMeta):
     @abstractmethod
     def is_empty(self):
         pass
@@ -86,8 +79,8 @@ class List(metaclass=ABCMeta):
         pass
 
 
-List.register(Nil);
-List.register(Cons)
+ListImmutable.register(Nil);
+ListImmutable.register(Cons)
 
 
 @tail_recursive
@@ -101,7 +94,7 @@ def print_list(xs, out=''):
         return recurse(xs.tail, out)
 
 
-def create_list(args_list):
+def List(args_list):
     """Crates immutable list from any indexable args"""
     tmp_list = cons(args_list[len(args_list) - 1], Nil())
     for x in range(len(args_list) - 2, -1, -1):
@@ -143,8 +136,8 @@ def cons(elem, xs):
 if __name__ == '__main__':
     x = cons(1, cons(2, Nil()))
     print_list(x)
-    List = list(range(10000))
-    imm_list = create_list(List)
+    List1 = list(range(10000))
+    imm_list = List(List1)
     print_list(imm_list)
     print(nth(9999, imm_list))
     print(length(imm_list))
