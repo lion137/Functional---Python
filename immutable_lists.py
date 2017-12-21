@@ -1,6 +1,11 @@
 # Cons lists, tail recursion decorator, functions on lists:
 
 from _collections_abc import ABCMeta, abstractmethod
+import collections
+import multiprocessing
+from pprint import pprint
+
+# Recurse Class and tail recursion decorator:
 
 
 class Recurse(Exception):
@@ -26,7 +31,9 @@ def tail_recursive(f):
     return decorated
 
 
-# immutable cons list and methods:
+# immutable Cons list and methods:
+
+
 class Nil:
     """class Nil, the empty list"""
 
@@ -44,7 +51,7 @@ class Nil:
 
 
 class Cons:
-    """Class cons, the non empty list: (head, list)"""
+    """Class Cons, the non empty list: (head, list)"""
 
     def __init__(self, _head, _list_tail):
         self.head = _head
@@ -53,21 +60,11 @@ class Cons:
     def is_empty(self):
         return False
 
-    def print_list(self):
-            current = self
-            out = ''
-            out = str(current.head)
-            # print(str(current.head))
-            while not isinstance(current.tail, Nil):
-                print("here", out)
-                out += ' ' + str(current.head)
-                current = current.tail
-                print(str(current.head))
-                print("here2", out)
-            return '(' + out + ')'
+    def __getitem__(self, index):
+        return nth(index, self)
 
 
-class ListImmutable(metaclass=ABCMeta):
+class ImmutableList(metaclass=ABCMeta):
     @abstractmethod
     def is_empty(self):
         pass
@@ -79,8 +76,8 @@ class ListImmutable(metaclass=ABCMeta):
         pass
 
 
-ListImmutable.register(Nil);
-ListImmutable.register(Cons)
+ImmutableList.register(Nil);
+ImmutableList.register(Cons)
 
 
 @tail_recursive
@@ -96,10 +93,11 @@ def print_list(xs, out=''):
 
 def List(args_list):
     """Crates immutable list from any indexable args"""
-    tmp_list = cons(args_list[len(args_list) - 1], Nil())
+    tmp_list = Cons(args_list[len(args_list) - 1], Nil())
     for x in range(len(args_list) - 2, -1, -1):
-        tmp_list = cons(args_list[x], tmp_list)
+        tmp_list = Cons(args_list[x], tmp_list)
     return tmp_list
+
 
 @tail_recursive
 def length(xs, cnt=0):
@@ -114,19 +112,13 @@ def length(xs, cnt=0):
 def nth(n, xs):
     """Returns nt-h (0 based indexing) elemt of the list,
     throws an exception when out of range"""
-    if empty(xs):
+    if isinstance(xs, Nil):
         return Exception("Out Of Bound")
     if n == 0:
         return xs.head
     else:
         return recurse(n - 1, xs.tail)
 
-
-def empty(xs):
-    if xs is Nil:
-        return True
-    else:
-        return False
 
 
 def cons(elem, xs):
@@ -141,3 +133,4 @@ if __name__ == '__main__':
     print_list(imm_list)
     print(nth(9999, imm_list))
     print(length(imm_list))
+    print(imm_list[10])
