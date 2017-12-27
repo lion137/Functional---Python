@@ -62,9 +62,10 @@ class Cons:
     def __str__(self):
         cur = self
         out = ''
-        while not cur.is_empty():
+        while (isinstance(cur, Cons) or isinstance(cur, Nil)) and (not cur.is_empty()):
             out += ' ' + str(cur.head)
             cur = cur.tail
+
         out = '(' + out + ')'
         return out
 
@@ -85,7 +86,9 @@ ImmutableList.register(Nil);
 ImmutableList.register(Cons)
 
 
-
+def cons(elem, xs):
+    """Cons element elem to the list"""
+    return Cons(elem, xs)
 
 
 def List(*args_list):
@@ -94,6 +97,7 @@ def List(*args_list):
         for x in range(len(args_list) - 2, -1, -1):
             tmp_list = Cons(args_list[x], tmp_list)
         return tmp_list
+
 
 def List_from_iter(args_list):
     """Crates a list form list"""
@@ -127,11 +131,6 @@ def nth(n, xs):
         return recurse(n - 1, xs.tail)
 
 
-
-def cons(elem, xs):
-    """Cons element elem to the list"""
-    return Cons(elem, xs)
-
 def sum_list(xs):
     if xs.is_empty():
         return 0
@@ -159,12 +158,13 @@ if __name__ == '__main__':
     print(imm_list[10])
     y = Cons(1, Nil())
     print(y.tail)'''
-    lst = List(list(range(1, 4)))
-    print(sum_list(lst)) # -> 6
-    lst2 = List(list(range(1, 10000)))
+    lst = List_from_iter(list(range(1, 4)))
+    print(lst) # -> 6
+    lst2 = List_from_iter(list(range(1, 10000)))
     #print(sum_list(lst2))  # Bang! Stos zjedzony!
     print(sum_list_iter(lst2) == sum(list(range(1, 10000)))) # -> True
     print(sum(list(range(1, 10000))))
     lst3 = cons(1, cons(2, Nil()))
     lst4 = cons(lst3, cons(3, Nil()))
     print("to str", lst4)
+    print()
