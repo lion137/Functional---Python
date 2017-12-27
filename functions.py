@@ -63,35 +63,3 @@ if __name__ == '__main__':
     append(lst_rev, List_from_iter(list(range(9999))))
     print(reverse_rec(lst0))
 
-'''(define append
-
-    (lambda (L1 L2)
-
-         (define append1
-
-              (lambda (L1 L2)
-
-                   (if (null? L1)
-
-                        L2
-
-                         (append1 (tail L1) (cons (head L1) L2)))))
-
-         (append1 (reverse L1) L2)))
-
-
-(define reverse
-
-     (lambda (L)
-
-           (define reverse1
-
-                 (lambda (L1 L2)
-
-                      (if (null? L1)
-
-                           L2
-
-                           (reverse1 (tail L1) (cons (head L1) L2)))))
-
-           (reverse1 L1 ())))'''
