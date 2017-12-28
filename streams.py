@@ -112,8 +112,12 @@ f = lambda x: cons(x, lambda : f(x + 1))
 # stream of nats:
 
 nat_numbers = lambda : f(1)
-
-# print(nat_numbers().head) # -> 1 frst elem in stream
+def nat_numbers_def():
+    g = lambda x: cons(x, lambda: g(x + 1))
+    return lambda : g(1)
+nat_numbers = nat_numbers_def()
+# print("type: ", type(nat_numbers()))
+# print(nat_numbers().tail().tail().head) # -> 1 frst elem in stream
 
 # print(nat_numbers().tail().head) # -> next number, 2
 
@@ -167,6 +171,8 @@ print("Using streams ------------------")
 # define function which using a stream
 
 def until(stream, test):
+    """returns number of evaluation of stream
+    before test"""
     @tail_recursive
     def f(stream, acc):
         tmp = stream()
@@ -187,7 +193,6 @@ def until(stream, test):
 
 
 def stream_while(s, n):
-
     """Takes stream s and number n and returns a list
     of n values of stream in order"""
     if n == 0:
@@ -195,5 +200,22 @@ def stream_while(s, n):
     else:
         return cons(s().head, stream_while(s().tail, n - 1))
 
-print(stream_while(powers_of_two_2, 2))
-print(cons(powers_of_two_2().head, cons(powers_of_two_2().tail().head, powers_of_two_2().tail)))
+# print(stream_while(powers_of_two_2, 2))
+# print(cons(powers_of_two_2().head, cons(powers_of_two_2().tail().head, powers_of_two_2().tail)))
+
+
+# map over stream....
+
+def stream_map(s, f):
+    """takes stream s and returns f
+    mapped over it"""
+    return cons(f(s().head), lambda : stream_map(s().tail, f))
+
+s_map = stream_map(nat_numbers, lambda x: x * x)
+
+# print(s_map.tail().tail().tail().head) # -> 16
+
+# filter over stream
+
+
+
