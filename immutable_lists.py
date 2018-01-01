@@ -2,6 +2,8 @@
 
 from _collections_abc import ABCMeta, abstractmethod
 
+from operator import *
+
 
 # Recurse Class and tail recursion decorator:
 
@@ -62,9 +64,11 @@ class Cons:
     def __str__(self):
         cur = self
         out = ''
-        while (isinstance(cur, Cons) or isinstance(cur, Nil)) and (not cur.is_empty()):
+        i = 0
+        while (isinstance(cur, Cons) or isinstance(cur, Nil)) and (not cur.is_empty()) and i < 20:
             out += ' ' + str(cur.head)
             cur = cur.tail
+            i += 1
 
         out = '(' + out + ')'
         return out
@@ -86,7 +90,7 @@ ImmutableList.register(Nil);
 ImmutableList.register(Cons)
 
 
-def cons(elem, xs):
+def cons(elem, xs=Nil()):
     """Cons element elem to the list"""
     return Cons(elem, xs)
 
@@ -105,8 +109,6 @@ def List_from_iter(args_list):
     for x in range(len(args_list) - 2, -1, -1):
         tmp_list = Cons(args_list[x], tmp_list)
     return tmp_list
-
-
 
 
 
@@ -147,24 +149,141 @@ def sum_list_iter(xs):
             return recurse(ys.tail, acc + ys.head)
     return iter_helper(xs, 0)
 
+
+def flatten(xs):
+    if xs.is_empty():
+        return Nil()
+    elif is_list(xs.head):
+        return concat(flatten(xs.head), flatten(xs.tail))
+    else:
+        return cons(xs.head, flatten(xs.tail))
+
+
+def concat(xs, ys):
+    @tail_recursive
+    def concat_help(lst1, lst2):
+        if lst1.is_empty():
+            return lst2
+        else:
+            recurse(lst1.tail, cons(lst1.head, lst2))
+    return concat_help(reverse(xs), ys)
+
+def reverse(xs):
+    @tail_recursive
+    def rev_helper(lst1, lst2):
+        if lst1.is_empty():
+            return lst2
+        else:
+            return recurse(lst1.tail, cons(lst1.head, lst2))
+    return rev_helper(xs, Nil())
+
+
+def is_list(xs):
+    return isinstance(xs, Cons) or isinstance(xs, Nil)
+
+
+# HOF's
+
+def cons_map(f, xs):
+    """returns cons list with function f
+    mapped over cons list xs"""
+    @tail_recursive
+    def helper(f, xs, ys):
+        if xs.is_empty():
+            return ys
+        else:
+            return recurse(f, xs.tail, Cons(f(xs.head), ys))
+    return helper(f, reverse(xs), Nil())
+
+
+def cons_filter(p, xs):
+    """takes predicate p and cons list xs
+    returns list filtered by predicate"""
+    @tail_recursive
+    def helper(pr, xs, ys):
+        if xs.is_empty():
+            return ys
+        elif pr(xs.head):
+            return recurse(pr, xs.tail, cons(xs.head, ys))
+        else:
+            return recurse(pr, xs.tail, ys)
+    return helper(p, reverse(xs), Nil())
+
+def cons_reduce(f, xs, start):
+    """fold left, takes a function f, sequence xs and
+    strating point start and returns function applied
+    to the starting point and the first element of the collection
+    outcome of this two the second element, etc... Ex.:
+    cons_reduce(add, [1, 2, 3], 0) = 6"""
+    @tail_recursive
+    def helper(fn, ys ,acc):
+        if ys.is_empty():
+            return acc
+        else:
+            return recurse(fn, ys.tail, fn(acc, ys.head))
+    return helper(f, xs, start)
+
+
+# stream functions:
+
+
+def make_stream(fn, arg):
+    """Takes function fn ,argument and returns stream"""
+    f = lambda x: cons(x, lambda : f(fn(x, arg)))
+    return lambda: f(arg)
+
+
+def stream_while(s, n):
+    """Takes stream s and number n and returns a list
+    of n values of stream in order"""
+    if n == 0:
+        return Nil()
+    else:
+        return cons(s().head, stream_while(s().tail, n - 1))
+
+
+def stream_reader(p, s):
+    """read a stream s until predicate p holds"""
+    current = s()
+    tmp_list = Nil()
+    while p(current.head):
+        tmp_list = cons(current.head, tmp_list)
+        current = current.tail()
+    return reverse(tmp_list)
+
+def stream_map(s, f):
+    """takes stream s and function f and return
+    stream (Thunk) with f mapped over s"""
+    return lambda: cons(f(s().head), stream_map(s().tail, f))
+
+
+def stream_filter(p, s):
+    """Takes a predicate p and a stream s and
+    returns the stream (Thunk) filtered by the predicate"""
+    if p(s().head):
+        return lambda : cons(s().head, stream_filter(p, s().tail))
+    else:
+        return stream_filter(p, s().tail)
+
+def stream_reduce(f, s, elem, p):
+    """Takes a stream s, function f, starting point elem and predicate p
+    and returns applying function to the first and second element,
+    then outcome of this to the third, etc... up to predicate p holds
+     when feed with the next stream element. Example: Stream: natural numbers,
+     function: +, starting element 0, predicate: > 4; result: 10,
+     sum of natural numbers up to 4"""
+    @tail_recursive
+    def helper(f, stream, elem, p, acc):
+        if p(stream().head):
+            return acc
+        else:
+            return recurse(f, stream().tail, elem, p, f(acc, stream().head))
+    return helper(f, s, elem, p, elem)
+
 if __name__ == '__main__':
-    '''x = cons(1, cons(2, Nil()))
-    print_list(x)
-    List1 = list(range(10000))
-    imm_list = List(List1)
-    print_list(imm_list)
-    print(nth(9999, imm_list))
-    print(length(imm_list))
-    print(imm_list[10])
-    y = Cons(1, Nil())
-    print(y.tail)'''
-    lst = List_from_iter(list(range(1, 4)))
-    print(lst) # -> 6
-    lst2 = List_from_iter(list(range(1, 10000)))
-    #print(sum_list(lst2))  # Bang! Stos zjedzony!
-    print(sum_list_iter(lst2) == sum(list(range(1, 10000)))) # -> True
-    print(sum(list(range(1, 10000))))
-    lst3 = cons(1, cons(2, Nil()))
-    lst4 = cons(lst3, cons(3, Nil()))
-    print("to str", lst4)
-    print()
+    lst = List_from_iter(list(range(9999)))
+    print(lst)
+    print(cons_map(lambda x: x * x, lst))
+    print("filtered ", cons_filter(lambda x: not x % 2 == 0, cons_map(lambda x: x * x, lst)))
+    print("fold_left", cons_reduce(add,cons_filter(lambda x: not x % 2 == 0, cons_map(lambda x: x * x, lst)) , 0))
+

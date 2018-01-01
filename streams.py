@@ -5,6 +5,8 @@
 from immutable_lists import *
 
 from operator import *
+
+
 def flatten(xs):
     if xs.is_empty():
         return Nil()
@@ -144,9 +146,7 @@ power_of_two = lambda : f2(1)
 
 # stream maker..
 
-def make_stream(fn, arg):
-    f = lambda x: cons(x, lambda : f(fn(x, arg)))
-    return lambda : f(arg)
+
 
 # define natural numbers using the stream maker
 
@@ -168,7 +168,8 @@ powers_of_two_2 = make_stream(mul, 2)
 
 print("Using streams ------------------")
 
-# define function which using a stream
+# define function which using a stream, numbers of
+# evaluation in steram
 
 def until(stream, test):
     """returns number of evaluation of stream
@@ -182,40 +183,6 @@ def until(stream, test):
             return recurse(tmp.tail, acc + 1)
     return f(stream, 1)
 
-
-
-# using sterams
-
-# print(until(powers_of_two_2, lambda x: x >= 8))
-
-# define function that takes a stream s and a number n. It returns a list holding the first n
-# values produced by s in order
-
-
-def stream_while(s, n):
-    """Takes stream s and number n and returns a list
-    of n values of stream in order"""
-    if n == 0:
-        return Nil()
-    else:
-        return cons(s().head, stream_while(s().tail, n - 1))
-
-# print(stream_while(powers_of_two_2, 2))
-# print(cons(powers_of_two_2().head, cons(powers_of_two_2().tail().head, powers_of_two_2().tail)))
-
-
-# map over stream....
-
-def stream_map(s, f):
-    """takes stream s and returns f
-    mapped over it"""
-    return cons(f(s().head), lambda : stream_map(s().tail, f))
-
-s_map = stream_map(nat_numbers, lambda x: x * x)
-
-# print(s_map.tail().tail().tail().head) # -> 16
-
-# filter over stream
 
 
 
