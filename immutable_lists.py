@@ -251,15 +251,15 @@ def stream_reader(p, s):
         current = current.tail()
     return reverse(tmp_list)
 
-def stream_map(s, f):
+def stream_map(f, s):
     """takes stream s and function f and return
-    stream (Thunk) with f mapped over s"""
-    return lambda: cons(f(s().head), stream_map(s().tail, f))
+    stream with f mapped over input stream s"""
+    return lambda: cons(f(s().head), stream_map(f, s().tail))
 
 
 def stream_filter(p, s):
     """Takes a predicate p and a stream s and
-    returns the stream (Thunk) filtered by the predicate"""
+    returns the stream filtered by the predicate"""
     if p(s().head):
         return lambda : cons(s().head, stream_filter(p, s().tail))
     else:
@@ -268,17 +268,17 @@ def stream_filter(p, s):
 def stream_reduce(f, s, elem, p):
     """Takes a stream s, function f, starting point elem and predicate p
     and returns applying function to the first and second element,
-    then outcome of this to the third, etc... up to predicate p holds
+    then outcome of this to the third, etc... until predicate p holds
      when feed with the next stream element. Example: Stream: natural numbers,
      function: +, starting element 0, predicate: > 4; result: 10,
      sum of natural numbers up to 4"""
     @tail_recursive
-    def helper(f, stream, elem, p, acc):
-        if p(stream().head):
+    def helper(f, stream, p, acc):
+        if not p(stream().head):
             return acc
         else:
-            return recurse(f, stream().tail, elem, p, f(acc, stream().head))
-    return helper(f, s, elem, p, elem)
+            return recurse(f, stream().tail, p, f(acc, stream().head))
+    return helper(f, s, p, elem)
 
 if __name__ == '__main__':
     lst = List_from_iter(list(range(9999)))
@@ -286,4 +286,11 @@ if __name__ == '__main__':
     print(cons_map(lambda x: x * x, lst))
     print("filtered ", cons_filter(lambda x: not x % 2 == 0, cons_map(lambda x: x * x, lst)))
     print("fold_left", cons_reduce(add,cons_filter(lambda x: not x % 2 == 0, cons_map(lambda x: x * x, lst)) , 0))
+    nat_numbers = make_stream(add, 1)
+    nat_mapped = stream_map(lambda x: x * x, nat_numbers)
+    nat_filtered = stream_filter(lambda x: not x % 2 == 0, nat_mapped)
+    print(stream_reader(lambda x: x < 10, nat_numbers)) # -> (1 2 3 4 5 6 7 8 9)
+    print(stream_reader(lambda x: x < 100, nat_mapped)) # -> (1 4 9 16 25 36 49 64 81)
+    print(stream_reader(lambda x: x < 100, nat_filtered)) # -> (1 9 25 49 81)
+    print(stream_reduce(add, nat_filtered, 0, lambda x: x <= 100)) # -> 165
 

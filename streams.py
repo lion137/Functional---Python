@@ -184,5 +184,29 @@ def until(stream, test):
     return f(stream, 1)
 
 
+ones = lambda : cons(1, ones)
+
+print(ones().tail().tail())
+
+# 1, 2, 3, 4,...
+
+f = lambda x: cons(x, lambda: f(x + 1))
+
+nat_numbers = lambda: f(1)
+
+nat_numbers().head # -> 1
+nat_numbers().tail().head # -> 2
+
+# nat numbers ver 2
+
+def nat_numbers2():
+    g = lambda x: cons(x, lambda: g(x + 1))
+    return g(1)
+
+nat_numbers2().head # -> 1
+nat_numbers2().tail().head # -> 2 ...
+
+stream_reader(lambda x: x < 10, nat_numbers2) # -> (1 2 3 4 5 6 7 8 9)
+
 
 
