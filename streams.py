@@ -1,4 +1,4 @@
-# Functional Python, streams.
+# Functional Python, streams, tests
 
 # Part One: Thunks, and delaying evaluation
 
