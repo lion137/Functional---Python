@@ -89,40 +89,6 @@ class ImmutableList(metaclass=ABCMeta):
 ImmutableList.register(Nil);
 ImmutableList.register(Cons)
 
-# immutable pair (cons)
-
-class cons:
-
-    def __init__(self, _head, _tail):
-        self.head = _head
-        self.tail = _tail
-
-    def is_empty(self):
-        return False
-
-    def __str__(self):
-        tmp = None
-        if not isinstance(self.tail, Nil):
-            tmp = ' . ' + str(self.tail)
-        else:
-            tmp = ''
-        return '(' + str(self.head) + tmp + ')'
-
-
-class ImmutablePair(metaclass=ABCMeta):
-    @abstractmethod
-    def is_empty(self):
-        pass
-
-    def head(self):
-        pass
-
-    def tail(self):
-        pass
-
-ImmutablePair.register(cons)
-
-
 def List(*args_list):
         """Crates immutable list from arguments"""
         tmp_list = Cons(args_list[len(args_list) - 1], Nil())
@@ -206,9 +172,9 @@ def is_list(xs):
 
 # HOF's
 
-def cons_map(f, xs):
-    """returns cons list with function f
-    mapped over cons list xs"""
+def map(f, xs):
+    """returns Cons list with function f
+    mapped over Cons list xs"""
     @tail_recursive
     def helper(f, xs, ys):
         if xs.is_empty():
@@ -218,8 +184,8 @@ def cons_map(f, xs):
     return helper(f, reverse(xs), Nil())
 
 
-def cons_filter(p, xs):
-    """takes predicate p and cons list xs
+def filter(p, xs):
+    """takes predicate p and Cons list xs
     returns list filtered by predicate"""
     @tail_recursive
     def helper(pr, xs, ys):
@@ -231,12 +197,12 @@ def cons_filter(p, xs):
             return recurse(pr, xs.tail, ys)
     return helper(p, reverse(xs), Nil())
 
-def cons_reduce(f, xs, start):
+def reduce(f, xs, start):
     """fold left, takes a function f, sequence xs and
     strating point start and returns function applied
     to the starting point and the first element of the collection
     outcome of this two the second element, etc... Ex.:
-    cons_reduce(add, [1, 2, 3], 0) = 6"""
+    Cons_reduce(add, [1, 2, 3], 0) = 6"""
     @tail_recursive
     def helper(fn, ys ,acc):
         if ys.is_empty():
@@ -251,7 +217,7 @@ def cons_reduce(f, xs, start):
 
 def make_stream(fn, arg):
     """Takes function fn ,argument and returns stream"""
-    f = lambda x: cons(x, lambda : f(fn(x, arg)))
+    f = lambda x: Cons(x, lambda : f(fn(x, arg)))
     return lambda: f(arg)
 
 
@@ -261,7 +227,7 @@ def stream_while(s, n):
     if n == 0:
         return Nil()
     else:
-        return cons(s().head, stream_while(s().tail, n - 1))
+        return Cons(s().head, stream_while(s().tail, n - 1))
 
 
 def stream_reader(p, s):
@@ -269,21 +235,21 @@ def stream_reader(p, s):
     current = s()
     tmp_list = Nil()
     while p(current.head):
-        tmp_list = cons(current.head, tmp_list)
+        tmp_list = Cons(current.head, tmp_list)
         current = current.tail()
     return reverse(tmp_list)
 
 def stream_map(f, s):
     """takes stream s and function f and return
     stream with f mapped over input stream s"""
-    return lambda: cons(f(s().head), stream_map(f, s().tail))
+    return lambda: Cons(f(s().head), stream_map(f, s().tail))
 
 
 def stream_filter(p, s):
     """Takes a predicate p and a stream s and
     returns the stream filtered by the predicate"""
     if p(s().head):
-        return lambda : cons(s().head, stream_filter(p, s().tail))
+        return lambda : Cons(s().head, stream_filter(p, s().tail))
     else:
         return stream_filter(p, s().tail)
 
@@ -304,3 +270,5 @@ def stream_reduce(f, s, elem, p):
 
 if __name__ == '__main__':
     pass
+
+
