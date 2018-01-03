@@ -83,7 +83,7 @@ z = lambda _: 1
 
 
 def delay(thunk):
-    return {False: thunk}
+    return [False, thunk]
 
 # force will be called on the thing returns form delay
 
@@ -93,12 +93,16 @@ def force(p):
         return p[1]
     else:
         p[0] = True
-        p[1] = p[1](None)
+        p[1] = p[1]()
         return p[1]
 
 # streams, beginning
 
 ones = lambda : cons(1, ones)  # stream of ones, ones returns a thunk: cons( 1, ones)
+nat_numbers = make_stream(add, 1)
+
+print("force tests", force(delay(nat_numbers)))
+
 
 # print(ones().head) # -> 1
 

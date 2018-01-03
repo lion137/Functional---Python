@@ -4,8 +4,8 @@ from _collections_abc import ABCMeta, abstractmethod
 
 from operator import *
 
-
 # Recurse Class and tail recursion decorator:
+
 
 
 class Recurse(Exception):
@@ -31,8 +31,8 @@ def tail_recursive(f):
     return decorated
 
 
-# immutable Cons list and methods:
-from _collections_abc import ABCMeta, abstractmethod
+# immutable List and methods:
+
 
 class Nil:
 
@@ -40,10 +40,10 @@ class Nil:
         return True
 
     def head(self):
-        return Exception("Exception: Empty list")
+        raise Exception("Exception: Empty list")
 
     def tail(self):
-        return Exception("Exception: Empty list")
+        raise Exception("Exception: Empty list")
 
     def __str__(self):
         return "()"
@@ -69,7 +69,7 @@ class Cons:
             out += ' ' + str(cur.head)
             cur = cur.tail
             i += 1
-
+        out = out.strip()
         out = '(' + out + ')'
         return out
 
@@ -89,10 +89,38 @@ class ImmutableList(metaclass=ABCMeta):
 ImmutableList.register(Nil);
 ImmutableList.register(Cons)
 
+# immutable pair (cons)
 
-def cons(elem, xs=Nil()):
-    """Cons element elem to the list"""
-    return Cons(elem, xs)
+class cons:
+
+    def __init__(self, _head, _tail):
+        self.head = _head
+        self.tail = _tail
+
+    def is_empty(self):
+        return False
+
+    def __str__(self):
+        tmp = None
+        if not isinstance(self.tail, Nil):
+            tmp = ' . ' + str(self.tail)
+        else:
+            tmp = ''
+        return '(' + str(self.head) + tmp + ')'
+
+
+class ImmutablePair(metaclass=ABCMeta):
+    @abstractmethod
+    def is_empty(self):
+        pass
+
+    def head(self):
+        pass
+
+    def tail(self):
+        pass
+
+ImmutablePair.register(cons)
 
 
 def List(*args_list):
@@ -133,14 +161,7 @@ def nth(n, xs):
         return recurse(n - 1, xs.tail)
 
 
-def sum_list(xs):
-    if xs.is_empty():
-        return 0
-    else:
-        return xs.head + sum_list(xs.tail)
-
-
-def sum_list_iter(xs):
+def sum(xs):
     @tail_recursive
     def iter_helper(ys, acc):
         if ys.is_empty():
@@ -156,7 +177,7 @@ def flatten(xs):
     elif is_list(xs.head):
         return concat(flatten(xs.head), flatten(xs.tail))
     else:
-        return cons(xs.head, flatten(xs.tail))
+        return Cons(xs.head, flatten(xs.tail))
 
 
 def concat(xs, ys):
@@ -165,8 +186,9 @@ def concat(xs, ys):
         if lst1.is_empty():
             return lst2
         else:
-            recurse(lst1.tail, cons(lst1.head, lst2))
+            recurse(lst1.tail, Cons(lst1.head, lst2))
     return concat_help(reverse(xs), ys)
+
 
 def reverse(xs):
     @tail_recursive
@@ -174,7 +196,7 @@ def reverse(xs):
         if lst1.is_empty():
             return lst2
         else:
-            return recurse(lst1.tail, cons(lst1.head, lst2))
+            return recurse(lst1.tail, Cons(lst1.head, lst2))
     return rev_helper(xs, Nil())
 
 
@@ -204,7 +226,7 @@ def cons_filter(p, xs):
         if xs.is_empty():
             return ys
         elif pr(xs.head):
-            return recurse(pr, xs.tail, cons(xs.head, ys))
+            return recurse(pr, xs.tail, Cons(xs.head, ys))
         else:
             return recurse(pr, xs.tail, ys)
     return helper(p, reverse(xs), Nil())
@@ -281,16 +303,4 @@ def stream_reduce(f, s, elem, p):
     return helper(f, s, p, elem)
 
 if __name__ == '__main__':
-    lst = List_from_iter(list(range(9999)))
-    print(lst)
-    print(cons_map(lambda x: x * x, lst))
-    print("filtered ", cons_filter(lambda x: not x % 2 == 0, cons_map(lambda x: x * x, lst)))
-    print("fold_left", cons_reduce(add,cons_filter(lambda x: not x % 2 == 0, cons_map(lambda x: x * x, lst)) , 0))
-    nat_numbers = make_stream(add, 1)
-    nat_mapped = stream_map(lambda x: x * x, nat_numbers)
-    nat_filtered = stream_filter(lambda x: not x % 2 == 0, nat_mapped)
-    print(stream_reader(lambda x: x < 10, nat_numbers)) # -> (1 2 3 4 5 6 7 8 9)
-    print(stream_reader(lambda x: x < 100, nat_mapped)) # -> (1 4 9 16 25 36 49 64 81)
-    print(stream_reader(lambda x: x < 100, nat_filtered)) # -> (1 9 25 49 81)
-    print(stream_reduce(add, nat_filtered, 0, lambda x: x <= 100)) # -> 165
-
+    pass
